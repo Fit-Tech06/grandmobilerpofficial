@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grand Mobile RP Spinner</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: radial-gradient(circle at center, #1f2937 0%, #111827 100%);
+    }
+    .spin-box {
+      width: 200px;
+      height: 200px;
+      border: 6px solid gold;
+      border-radius: 50%;
+      box-shadow: 0 0 20px gold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 20px auto;
+      transition: transform 2s ease;
+      background-color: black;
+    }
+    .confetti {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .confetti-piece {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: gold;
+      animation: fall 2s linear forwards;
+    }
+    @keyframes fall {
+      to {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body class="text-white font-sans min-h-screen flex flex-col items-center justify-center p-6">
+
+  <div id="app" class="w-full max-w-2xl">
+    <!-- Login Options -->
+    <div id="login-options">
+      <h1 class="text-3xl font-bold mb-6 text-center text-yellow-400">🎮 Grand Mobile RP Spinner</h1>
+      <div class="flex flex-col gap-4">
+        <button onclick="selectLogin('Google')" class="bg-red-500 hover:bg-red-600 py-2 rounded shadow-lg">Login with Google</button>
+        <button onclick="selectLogin('Discord')" class="bg-indigo-500 hover:bg-indigo-600 py-2 rounded shadow-lg">Login with Discord</button>
+      </div>
+    </div>
+
+    <!-- Fake Login Form -->
+    <div id="login-form" class="hidden mt-6">
+      <h2 class="text-xl font-semibold mb-2">Login with <span id="login-type"></span></h2>
+      <input id="email" type="text" placeholder="Email or Username" class="w-full p-2 mb-2 rounded bg-gray-800 text-white" />
+      <input id="password" type="password" placeholder="Password" class="w-full p-2 mb-4 rounded bg-gray-800 text-white" />
+      <button onclick="submitLogin()" class="bg-green-500 hover:bg-green-600 py-2 w-full rounded shadow">Submit</button>
+    </div>
+
+    <!-- Nickname Entry -->
+    <div id="nickname-form" class="hidden mt-6">
+      <p class="mb-2 text-green-400">✅ Successfully logged in!</p>
+      <input id="nickname" type="text" placeholder="Enter your game nickname (e.g. Prince_Valente)" class="w-full p-2 mb-4 rounded bg-gray-800 text-white" />
+      <button onclick="submitNickname()" class="bg-yellow-500 hover:bg-yellow-600 py-2 w-full rounded shadow">Continue</button>
+    </div>
+
+    <!-- Spinner Screen -->
+    <div id="spinner-screen" class="hidden mt-6 text-center">
+      <h2 class="text-2xl font-bold mb-4 text-yellow-300">🎁 Try Your Luck!</h2>
+
+      <!-- Reward Gallery -->
+      <div class="grid grid-cols-3 gap-4 mb-6">
+        <img src="accessories.png.jpg" class="w-24 h-24 object-contain rounded bg-yellow-500 p-1 shadow" />
+        <img src="accessories1png.jpg" class="w-24 h-24 object-contain rounded bg-yellow-500 p-1 shadow" />
+        <img src="accessories5.png.jpg" class="w-24 h-24 object-contain rounded bg-yellow-500 p-1 shadow" />
+        <img src="bicycle.png.jpg" class="w-24 h-24 object-contain rounded bg-yellow-500 p-1 shadow" />
+        <img src="accessories4.png.jpg" class="w-24 h-24 object-contain rounded bg-yellow-500 p-1 shadow" />
+        <img src="accessories2.png.jpg" class="w-24 h-24 object-contain rounded bg-yellow-500 p-1 shadow" />
+        <img src="accessories6.png.jpg" class="w-24 h-24 object-contain rounded bg-yellow-500 p-1 shadow" />
+        <img src="accessories3.png.jpg" class="w-24 h-24 object-contain rounded bg-yellow-500 p-1 shadow" />
+        <img src="cars.png" class="w-24 h-24 object-contain rounded bg-yellow-500 p-1 shadow" />
+        <img src="cars1.png.jpg" class="w-24 h-24 object-contain rounded bg-yellow-500 p-1 shadow" />
+        <img src="cars2.png.jpg" class="w-24 h-24 object-contain rounded bg-yellow-500 p-1 shadow" />
+      </div>
+
+      <!-- Spinner -->
+      <div id="spin-box" class="spin-box">
+        <img id="spin-image" src="" alt="Reward" class="w-32 h-32 object-contain" />
+      </div>
+
+      <button onclick="spin()" id="spin-button" class="bg-yellow-500 hover:bg-yellow-600 py-2 px-4 rounded shadow-lg">Try Your Luck</button>
+      <p id="result-message" class="mt-4 text-green-400 font-semibold"></p>
+    </div>
+  </div>
+
+  <div id="confetti" class="confetti"></div>
+
+  <script>
+    let selectedLogin = "";
+    let nickname = "";
+    let hasSpun = {};
+
+    const rewards = [
+      "accessories.png.jpg",
+      "accessories1png.jpg",
+      "accessories5.png.jpg",
+      "bicycle.png.jpg",
+      "accessories4.png.jpg",
+      "accessories2.png.jpg",
+      "accessories6.png.jpg",
+      "accessories3.png.jpg",
+      "cars.png",
+      "cars1.png.jpg",
+      "cars2.png.jpg"
+    ];
+
+    function selectLogin(type) {
+      selectedLogin = type;
+      document.getElementById("login-options").classList.add("hidden");
+      document.getElementById("login-form").classList.remove("hidden");
+      document.getElementById("login-type").innerText = type;
+    }
+
+    function submitLogin() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      if (email && password) {
+        document.getElementById("login-form").classList.add("hidden");
+        document.getElementById("nickname-form").classList.remove("hidden");
+      }
+    }
+
+    function submitNickname() {
+      nickname = document.getElementById("nickname").value.trim();
+      if (!nickname.match(/^[A-Za-z0-9_]+$/)) {
+        alert("Invalid nickname format. Use letters, numbers, and underscores only.");
+        return;
+      }
+      document.getElementById("nickname-form").classList.add("hidden");
+      document.getElementById("spinner-screen").classList.remove("hidden");
+
+      if (hasSpun[nickname]) {
+        document.getElementById("spin-button").classList.add("hidden");
+        document.getElementById("spin-image").src = hasSpun[nickname];
+        document.getElementById("result-message").innerText = "Reward pending. Please wait until your reward is credited.";
+      }
+    }
+
+    function spin() {
+      if (hasSpun[nickname]) return;
+
+      const spinBox = document.getElementById("spin-box");
+      const spinImage = document.getElementById("spin-image");
+      const resultMessage = document.getElementById("result-message");
+
+      const reward = rewards[Math.floor(Math.random() * rewards.length)];
+      spinBox.style.transform = "rotate(720deg)";
+      setTimeout(() => {
+        spinBox.style.transform = "rotate(0deg)";
+        spinImage.src = reward;
+        resultMessage.innerText = "🎉 Congratulations! Your reward will be credited to your account within 24 hours.";
+        hasSpun[nickname] = reward;
+        document.getElementById("spin-button").classList.add("hidden");
+        launchConfetti();
+      }, 2000);
+    }
+
+    function launchConfetti() {
+      const confettiContainer = document.getElementById("confetti");
+      for (let i = 0; i < 100; i++) {
+        const piece = document.createElement("div");
+        piece.classList.add("confetti-piece");
+        piece.style.left = Math.random() * window.innerWidth + "px";
+        piece.style.top = "-10px";
+        piece.style.backgroundColor = ["gold", "orange", "white"][Math.floor(Math.random() * 3)];
+        piece.style.animationDuration = (1 + Math.random()) + "s";
+        confettiContainer.appendChild(piece);
+
+        setTimeout(() => {
+          confettiContainer.removeChild(piece);
+        }, 2000);
+      }
+    }
+  </script>
+</body>
+</html>
